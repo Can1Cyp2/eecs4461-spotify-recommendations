@@ -1,0 +1,64 @@
+{
+  "evidence_status": "hypothetical",
+  "established": [
+    "VV12245",
+    "VV17061",
+    "VV13078",
+    "VV3415",
+    "VV14249",
+    "VV12215",
+    "VV12048",
+    "VV23661",
+    "VV13791",
+    "VV6965"
+  ],
+  "recent": {
+    "aligned": [
+      "VV12245",
+      "VV17061",
+      "VV13078",
+      "VV3415",
+      "VV14249",
+      "VV12215",
+      "VV12048",
+      "VV23661",
+      "VV13791",
+      "VV6965"
+    ],
+    "half_different": [
+      "VV12245",
+      "VV17061",
+      "VV3415",
+      "VV12048",
+      "VV6965",
+      "VV7650",
+      "VV12081",
+      "VV3920",
+      "VV12953",
+      "VV774"
+    ],
+    "contrasting": [
+      "VV7650",
+      "VV12081",
+      "VV3920",
+      "VV12953",
+      "VV774",
+      "VV30152",
+      "VV10040",
+      "VV17613",
+      "VV14182",
+      "VV10714"
+    ]
+  },
+  "profile_design": {
+    "selected_before_runs": true,
+    "selected_on": "2026-11-03",
+    "selection_reason": "The established set uses ten familiar songs. The half-different set retains three Rock and two Alternative songs, including slow and faster tempos and some shared keys. The 5 additional songs for the 3rd contrasting set (different from established taste) introduce Metal, Country and Pop. The contrasting set uses those five additions and five further familiar songs, with no established song overlap. This gives Rock/Alternative shares of 100%, 60% and 20% in recent listening. Songs were not necessarily selected to produce specific recommendation outcomes, but I selected them to reflect an at least somewhat realistic taste.",
+    "limitations": [
+      "The established set has a broad stored tempo range, despite me mentioning that tempo maybe similar. In music, preference in tempo is not a guarantee so this set reflects a variety in tempo and was not purposely picked based on tempo.",
+      "The contrasting set differs strongly in genre mix but only slightly in mean tempo. This is focused on broadening genre preference, not extreme tempo shift, only the natural one that typically comes in different genres.",
+      "Rock and Alternative are grouped together only to describe the pattern, but it is important to note that 'alternative' is a broad category in music, they remain separate categories in scoring.",
+      "These are hypothetical scenarios selected from familiar songs, not real observed listening history."
+    ]
+  }
+}
