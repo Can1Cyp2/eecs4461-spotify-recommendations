@@ -1,0 +1,4 @@
+scenario,reference_weight,weight,replacements,entered_ids,left_ids,rank10,rank11,gap_exact
+contrasting,0.75,0.7,0,,,An Audience with the Pope,Nature's Law,271909/185550000
+contrasting,0.75,0.75,0,,,An Audience with the Pope,The Continuing Story of Bungalow Bill,25909/111330000
+contrasting,0.75,0.8,2,VV21528|VV30112,VV24028|VV7808,Young,Little Things,24668/6958125

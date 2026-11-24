@@ -30,13 +30,13 @@ def read_csv(path):
         return list(csv.DictReader(f))
 
 
-def run_conditions(data_dir):
+def run_conditions(data_dir, weights=WEIGHTS, scenarios=SCENARIOS):
     # runs each scenario at 0, 0.25, 0.50, 0.75 and 1, keeping 0.50 as the baseline:
     catalogue, profiles, scales = load_inputs(data_dir)
     baseline, alternative = [], []
-    for weight in WEIGHTS:
+    for weight in weights:
         target = baseline if weight == Fraction(1, 2) else alternative
-        for scenario in SCENARIOS:
+        for scenario in scenarios:
             model = RecommendationModel(catalogue, profiles, scales, scenario, weight)
             model.run()
             for rank, agent in enumerate(model.ranking(), 1):
@@ -56,6 +56,23 @@ def run_conditions(data_dir):
                                 for key, value in components(agent.track, profile, scales).items()})
                 target.append(row)
     return baseline, alternative
+
+
+def cutoff_table(rows):
+    pair = sorted((r for r in rows if int(r['candidate_rank']) in (10, 11)),
+                  key=lambda r: int(r['candidate_rank']))
+    gap = Fraction(pair[0]['score_exact']) - Fraction(pair[1]['score_exact'])
+    lines = []
+    for song in pair:
+        values = [song['candidate_rank'], song['track_id'], song['title']]
+        values += [f"{float(song[key]):.6f}" for key in
+                   ('established_similarity', 'recent_similarity', 'score')]
+        lines.append('<tr>' + ''.join(f'<td>{html.escape(str(v))}</td>' for v in values) + '</tr>')
+    return ('<h3>Last song selected and first song left out</h3>'
+            '<div class="table-wrap"><table><thead><tr><th>Candidate rank</th><th>ID</th>'
+            '<th>Song</th><th>Established match</th><th>Recent match</th><th>Weighted score</th>'
+            '</tr></thead><tbody>' + ''.join(lines) + '</tbody></table></div>'
+            + f'<p>Score gap between ranks 10 and 11: {float(gap):.8f}.</p>')
 
 
 def playlist_table(out, condition, rows):
@@ -83,7 +100,9 @@ def playlist_table(out, condition, rows):
                 + '<th scope="col">Playlist rank</th><th scope="col">Song ID</th>'
                 + '<th scope="col">Song</th><th scope="col">Artist</th>'
                 + '<th scope="col">Genre</th><th scope="col">Similarity score</th>'
-                + '</tr></thead><tbody>' + body + '</tbody></table></div></section>'
+                + '</tr></thead><tbody>' + body + '</tbody></table></div>'
+                + cutoff_table([r for r in rows if r['scenario'] == scenario and float(r['weight']) == weight])
+                + '</section>'
             )
     title = 'Baseline recommended playlists' if condition == 'baseline' else 'Alternative recommended playlists'
     explanation = (
@@ -236,6 +255,25 @@ def main():
     comparisons = compare_weights(baseline + alternative)
     write_csv(out / 'alternative_processed_01_comparison.csv', comparisons)
     comparison_plot(out)
+    # The two follow-up runs use the same model as the original five positions.
+    _, nearby = run_conditions(args.data_dir, (Fraction(7, 10), Fraction(4, 5)), ('contrasting',))
+    write_csv(out / 'alternative_raw_01_nearby_rankings.csv', nearby)
+    reference = {r['track_id'] for r in alternative if r['scenario'] == 'contrasting'
+                 and float(r['weight']) == .75 and int(r['selected_rank']) > 0}
+    summaries = []
+    for weight in (.70, .75, .80):
+        source = alternative if weight == .75 else nearby
+        ranked = sorted((r for r in source if r['scenario'] == 'contrasting' and float(r['weight']) == weight),
+                        key=lambda r: int(r['candidate_rank']))
+        selected = {r['track_id'] for r in ranked[:10]}
+        tenth, eleventh = ranked[9:11]
+        summaries.append(dict(scenario='contrasting', reference_weight=.75, weight=weight,
+                              replacements=len(selected - reference),
+                              entered_ids='|'.join(sorted(selected - reference)),
+                              left_ids='|'.join(sorted(reference - selected)),
+                              rank10=tenth['title'], rank11=eleventh['title'],
+                              gap_exact=str(Fraction(tenth['score_exact']) - Fraction(eleventh['score_exact']))))
+    write_csv(out / 'alternative_processed_03_nearby_comparison.csv', summaries)
     print('Songs replaced when recent-listening weight changes from 0.50 to 0.75:')
     for row in comparisons:
         if row['from_weight'] == .5 and row['to_weight'] == .75:
@@ -244,7 +282,7 @@ def main():
     for scenario in SCENARIOS:
         row = next(row for row in comparisons if row['scenario'] == scenario)
         print(f"  {SCENARIO_NAMES[scenario]}: {row['unique_tracks_all_weights']} songs")
-    print(f'Saved six output files in {out}')
+    print(f'Saved eight output files in {out}')
 
 
 if __name__ == '__main__':
